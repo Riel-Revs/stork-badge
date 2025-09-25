@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stork Badge Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+    input {
+      margin: 8px 0;
+      padding: 10px;
+      width: 90%;
+      border: none;
+      border-radius: 6px;
+    }
+    button {
+      margin-top: 12px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: #e63946;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    canvas {
+      margin-top: 20px;
+      border: 2px solid #e63946;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Stork Community Badge Generator</h2>
+    <input type="text" id="username" placeholder="Enter your username"><br>
+    <input type="text" id="role" placeholder="Enter your Discord role"><br>
+    <input type="text" id="nickname" placeholder="Enter your A.k.a (nickname)"><br>
+    <input type="file" id="avatar" accept="image/*"><br>
+    <button onclick="generateBadge()">Generate Badge</button>
+    <canvas id="badgeCanvas" width="400" height="500"></canvas>
+  </div>
+
+  <script>
+    async function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
+
+    async function generateBadge() {
+      const username = document.getElementById('username').value;
+      const role = document.getElementById('role').value;
+      const nickname = document.getElementById('nickname').value;
+      const avatarInput = document.getElementById('avatar').files[0];
+
+      const canvas = document.getElementById('badgeCanvas');
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#111';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Header
+      ctx.fillStyle = '#e63946';
+      ctx.fillRect(0, 0, canvas.width, 80);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 22px Arial';
+      ctx.fillText('Stork Oracle', 20, 50);
+
+      // Draw avatar
+      if (avatarInput) {
+        const reader = new FileReader();
+        reader.onload = async function(event) {
+          const avatarImg = await loadImage(event.target.result);
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(200, 180, 60, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(avatarImg, 140, 120, 120, 120);
+          ctx.restore();
+          drawText();
+        };
+        reader.readAsDataURL(avatarInput);
+      } else {
+        drawText();
+      }
+
+      async function drawText() {
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 20px Arial';
+        ctx.fillText(username || 'Anonymous', 200 - ctx.measureText(username || 'Anonymous').width / 2, 280);
+
+        ctx.fillStyle = '#e63946';
+        ctx.font = '16px Arial';
+        ctx.fillText(role || 'Community Member', 200 - ctx.measureText(role || 'Community Member').width / 2, 310);
+
+        ctx.fillStyle = '#ccc';
+        ctx.font = 'italic 14px Arial';
+        ctx.fillText(nickname ? `A.k.a ${nickname}` : '', 200 - ctx.measureText(nickname ? `A.k.a ${nickname}` : '').width / 2, 335);
+
+        // Draw Stork logo
+        try {
+          const logo = await loadImage('stork-logo.png');
+          ctx.drawImage(logo, 150, 360, 100, 100);
+        } catch (e) {
+          console.error('Logo not found, skipping...');
+        }
+      }
+    }
+  </script>
+</body>
+</html>
